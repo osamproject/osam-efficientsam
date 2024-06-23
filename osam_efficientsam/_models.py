@@ -1,13 +1,10 @@
 import numpy as np
 from osam_core import apis
-from osam_core.types import ImageEmbedding
-from osam_core.types import ModelBase
-from osam_core.types import ModelBlob
-from osam_core.types import Prompt
+from osam_core import types
 
 
-class EfficientSam(ModelBase):
-    def encode_image(self, image: np.ndarray) -> ImageEmbedding:
+class EfficientSam(types.Model):
+    def encode_image(self, image: np.ndarray) -> types.ImageEmbedding:
         if image.ndim == 2:
             raise ValueError("Grayscale images are not supported")
         if image.ndim == 3 and image.shape[2] == 4:
@@ -19,7 +16,7 @@ class EfficientSam(ModelBase):
             input_feed={"batched_images": batched_images},
         )[0][0]  # (embedding_dim, height, width)
 
-        return ImageEmbedding(
+        return types.ImageEmbedding(
             original_height=image.shape[0],
             original_width=image.shape[1],
             embedding=image_embedding,
@@ -27,8 +24,8 @@ class EfficientSam(ModelBase):
 
     def generate_mask(
         self,
-        image_embedding: ImageEmbedding,
-        prompt: Prompt,
+        image_embedding: types.ImageEmbedding,
+        prompt: types.Prompt,
     ) -> np.ndarray:
         input_point = np.array(prompt.points, dtype=np.float32)
         input_label = np.array(prompt.point_labels, dtype=np.float32)
@@ -61,11 +58,11 @@ class EfficientSam10m(EfficientSam):
     name = "efficientsam:10m"
 
     _blobs = {
-        "encoder": ModelBlob(
+        "encoder": types.Blob(
             url="https://github.com/labelmeai/efficient-sam/releases/download/onnx-models-20231225/efficient_sam_vitt_encoder.onnx",
             hash="sha256:7a73ee65aa2c37237c89b4b18e73082f757ffb173899609c5d97a2bbd4ebb02d",
         ),
-        "decoder": ModelBlob(
+        "decoder": types.Blob(
             url="https://github.com/labelmeai/efficient-sam/releases/download/onnx-models-20231225/efficient_sam_vitt_decoder.onnx",
             hash="sha256:e1afe46232c3bfa3470a6a81c7d3181836a94ea89528aff4e0f2d2c611989efd",
         ),
@@ -76,11 +73,11 @@ class EfficientSam25m(EfficientSam):
     name = "efficientsam:latest"
 
     _blobs = {
-        "encoder": ModelBlob(
+        "encoder": types.Blob(
             url="https://github.com/labelmeai/efficient-sam/releases/download/onnx-models-20231225/efficient_sam_vits_encoder.onnx",
             hash="sha256:4cacbb23c6903b1acf87f1d77ed806b840800c5fcd4ac8f650cbffed474b8896",
         ),
-        "decoder": ModelBlob(
+        "decoder": types.Blob(
             url="https://github.com/labelmeai/efficient-sam/releases/download/onnx-models-20231225/efficient_sam_vits_decoder.onnx",
             hash="sha256:4727baf23dacfb51d4c16795b2ac382c403505556d0284e84c6ff3d4e8e36f22",
         ),
