@@ -27,6 +27,9 @@ class EfficientSam(types.Model):
         image_embedding: types.ImageEmbedding,
         prompt: types.Prompt,
     ) -> np.ndarray:
+        if prompt.points is None or prompt.point_labels is None:
+            raise ValueError("Prompt must contain points and point_labels: %r", prompt)
+
         input_point = np.array(prompt.points, dtype=np.float32)
         input_label = np.array(prompt.point_labels, dtype=np.float32)
 
