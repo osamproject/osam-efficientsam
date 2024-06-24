@@ -1,4 +1,6 @@
+import imgviz
 import numpy as np
+from loguru import logger
 from osam_core import apis
 from osam_core import types
 
@@ -22,11 +24,34 @@ class EfficientSam(types.Model):
             embedding=image_embedding,
         )
 
-    def generate_mask(
-        self,
-        image_embedding: types.ImageEmbedding,
-        prompt: types.Prompt,
-    ) -> np.ndarray:
+    def generate(self, request: types.GenerateRequest) -> types.GenerateResponse:
+        if request.image_embedding is None:
+            image_embedding = self.encode_image(request.image)
+        else:
+            image_embedding = request.image_embedding
+
+        if request.prompt is None:
+            prompt = types.Prompt(
+                points=np.array(
+                    [
+                        [
+                            image_embedding.original_width / 2,
+                            image_embedding.original_height / 2,
+                        ]
+                    ],
+                    dtype=np.float32,
+                ),
+                point_labels=np.array([1], dtype=np.int32),
+            )
+            logger.warning(
+                "Prompt is not given, so using the center point as prompt: {prompt!r}",
+                prompt=prompt,
+            )
+        else:
+            prompt = request.prompt
+
+        del request
+
         if prompt.points is None or prompt.point_labels is None:
             raise ValueError("Prompt must contain points and point_labels: %r", prompt)
 
@@ -54,7 +79,13 @@ class EfficientSam(types.Model):
         mask = masks[0, 0, 0, :, :]  # (1, 1, 3, H, W) -> (H, W)
         mask = mask > 0.0
 
-        return mask
+        return types.GenerateResponse(
+            model=self.name,
+            image_embedding=image_embedding,
+            masks=[mask],
+            bounding_boxes=imgviz.instances.mask_to_bbox([mask]).astype(int).tolist(),
+            texts=None,
+        )
 
 
 class EfficientSam10m(EfficientSam):
