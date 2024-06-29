@@ -49,7 +49,6 @@ class EfficientSam(types.Model):
             )
         else:
             prompt = request.prompt
-
         del request
 
         if prompt.points is None or prompt.point_labels is None:
