@@ -31,7 +31,6 @@ classifiers = [
 ]
 dependencies = [
   "osam-core",
-  "Pillow",
 ]
 dynamic = ["readme", "version"]
 
