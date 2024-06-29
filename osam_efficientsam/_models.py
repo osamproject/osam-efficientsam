@@ -110,7 +110,7 @@ class EfficientSam10m(EfficientSam):
     }
 
 
-class EfficientSam25m(EfficientSam):
+class EfficientSam30m(EfficientSam):
     name = "efficientsam:latest"
 
     _blobs = {
@@ -126,4 +126,4 @@ class EfficientSam25m(EfficientSam):
 
 
 apis.register_model_type(EfficientSam10m)
-apis.register_model_type(EfficientSam25m)
+apis.register_model_type(EfficientSam30m)
