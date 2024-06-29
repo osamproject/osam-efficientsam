@@ -79,12 +79,19 @@ class EfficientSam(types.Model):
         mask = masks[0, 0, 0, :, :]  # (1, 1, 3, H, W) -> (H, W)
         mask = mask > 0.0
 
+        bbox = imgviz.instances.mask_to_bbox([mask])[0].astype(int)
+
         return types.GenerateResponse(
             model=self.name,
             image_embedding=image_embedding,
-            masks=[mask],
-            bounding_boxes=imgviz.instances.mask_to_bbox([mask]).astype(int).tolist(),
-            texts=None,
+            annotations=[
+                types.Annotation(
+                    mask=mask,
+                    bounding_box=types.BoundingBox(
+                        ymin=bbox[0], xmin=bbox[1], ymax=bbox[2], xmax=bbox[3]
+                    ),
+                )
+            ],
         )
 
 
